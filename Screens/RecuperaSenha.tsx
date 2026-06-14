@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import { SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
 

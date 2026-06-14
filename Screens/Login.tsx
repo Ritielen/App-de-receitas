@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 
 import { SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
@@ -21,7 +20,7 @@ export default function Login() {
 
   const handleLogin = () => {
     
-    logar(() => navigation.replace('Home'));
+    logar(() => navigation.replace('MainTabs'));
   };
 
   return (

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { 
   FlatList, 
@@ -113,78 +112,6 @@ export default function Favoritos() {
             )}
           />
         )}
-      </YStack>
-
-      {/* Menu inferior */}
-      <YStack
-        flexDirection="row"
-        justifyContent="space-around"
-        alignItems="center"
-        backgroundColor="white"
-        paddingVertical="$3"
-        paddingBottom={Platform.OS === 'android' ? 60 : 60}
-        borderTopWidth={1}
-        borderTopColor="#e0e0e0"
-      >
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Home')}
-          style={{ alignItems: 'center' }}
-        >
-          <Ionicons name="home" size={24} color="gray" />
-          <Text fontSize={12} color="gray" marginTop="$1">
-            Inicio
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Categorias')}
-          style={{ alignItems: 'center' }}
-        >
-          <FontAwesome5 name="bread-slice" size={24} color="gray" />
-          <Text fontSize={12} color="gray" marginTop="$1">
-            Categorias
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Home')}
-          style={{ alignItems: 'center' }}
-        >
-          <Ionicons name="bookmark-outline" size={24} color="gray" />
-          <Text fontSize={12} color="gray" marginTop="$1">
-            Publicadas
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Home')}
-          style={{ alignItems: 'center' }}
-        >
-          <Feather name="search" size={24} color="gray" />
-          <Text fontSize={12} color="gray" marginTop="$1">
-            Pesquisa
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Home')}
-          style={{ alignItems: 'center' }}
-        >
-          <Ionicons name="star" size={24} color="gray" />
-          <Text fontSize={12} color="gray" marginTop="$1">
-            IA
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Home')}
-          style={{ alignItems: 'center' }}
-        >
-          <Ionicons name="heart" size={24} color="orange" />
-          <Text fontSize={12} color="orange" fontWeight="bold" marginTop="$1">
-            Favoritos
-          </Text>
-        </TouchableOpacity>
       </YStack>
     </SafeAreaView>
   );
