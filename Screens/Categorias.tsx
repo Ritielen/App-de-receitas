@@ -91,9 +91,7 @@ export default function Categorias() {
           <FlatList
             data={categoriasData}
             keyExtractor={(item) => item.id}
-            numColumns={2}
             contentContainerStyle={{ gap: CARD_GAP }}
-            columnWrapperStyle={{ gap: CARD_GAP }}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
               <TouchableOpacity
@@ -113,7 +111,8 @@ export default function Categorias() {
                     borderRadius={12}
                     justifyContent="flex-end"
                     padding="$3"
-                  >
+                    paddingHorizontal="$2"
+                    >
                     <Text
                       color="white"
                       fontSize={16}
@@ -131,6 +130,7 @@ export default function Categorias() {
       </SafeAreaView>
     );
   }
+  
 
   // Tela de receitas da categoria selecionada
   return (
@@ -197,18 +197,19 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   card: {
-    width: CARD_WIDTH,
-    height: 180,
+    width: '100%',
+    height: 120,
     borderRadius: 12,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    overflow: 'hidden', 
   },
   cardImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+    
   },
 });
