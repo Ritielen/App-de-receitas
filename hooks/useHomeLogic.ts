@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert  } from 'react-native';
 import { addDoc, collection, getDocs, query, orderBy, onSnapshot,  where, deleteDoc } from 'firebase/firestore';
 import * as ImagePicker from 'expo-image-picker';
 import { auth, db } from '../firebase';
@@ -246,6 +246,7 @@ console.log('Sobrenome:', sobrenomeUsuario);
     }
   };
 
+  
   return {
     novaReceita,           
     setNovaReceita,        

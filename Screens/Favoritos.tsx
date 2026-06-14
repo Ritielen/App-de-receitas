@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  FlatList, 
-  SafeAreaView, 
-  Platform, 
-  StatusBar, 
+import {
+  FlatList,
+  SafeAreaView,
+  Platform,
+  StatusBar,
   StyleSheet,
   ActivityIndicator
 } from 'react-native';
@@ -37,7 +37,7 @@ export default function Favoritos() {
 
     const receitasRef = collection(db, 'receitas');
     const q = query(receitasRef, where('__name__', 'in', favoritos));
-    
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const receitas: any[] = [];
       snapshot.forEach((doc) => {
@@ -56,19 +56,17 @@ export default function Favoritos() {
     return () => unsubscribe();
   }, [favoritos]);
 
-  const voltarParaHome = () => {
-    navigation.goBack();
+   const voltarParaHome = () => {
+    navigation.navigate('Inicio');
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <YStack flex={1} padding="$4">
-        
+
         {/* Barra superior */}
         <XStack justifyContent="space-between" alignItems="center" marginBottom="$4">
-          <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-            <Ionicons name="arrow-back" size={24} color="black" />
-          </TouchableOpacity>
+
           <Text fontSize={20} fontWeight="bold" color="black">
             Meus Favoritos
           </Text>
@@ -92,7 +90,7 @@ export default function Favoritos() {
             <Button
               backgroundColor="orange"
               color="white"
-              onPress={() => navigation.navigate('Home')}
+              onPress={() => navigation.navigate('Inicio')}
             >
               Explorar Receitas
             </Button>
@@ -104,8 +102,8 @@ export default function Favoritos() {
             contentContainerStyle={{ paddingBottom: 20 }}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
-              <ReceitaCard 
-                item={item} 
+              <ReceitaCard
+                item={item}
                 favoritado={favoritos.includes(item.id)}
                 toggleFavorito={toggleFavorito}
               />

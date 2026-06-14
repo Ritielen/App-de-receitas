@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  FlatList, 
-  SafeAreaView, 
-  Platform, 
-  StatusBar, 
+import {
+  FlatList,
+  SafeAreaView,
+  Platform,
+  StatusBar,
   StyleSheet,
   ImageBackground,
   TouchableOpacity,
   Dimensions,
-  ActivityIndicator
+  ActivityIndicator,
+  Alert
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { useHomeLogic } from '../hooks/useHomeLogic';
 import { YStack, XStack, Text, Button } from 'tamagui';
-import { Ionicons, FontAwesome5, Feather } from '@expo/vector-icons';
+import { Ionicons, } from '@expo/vector-icons';
 import { ReceitaCard } from '../components/ReceitaCard';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -41,9 +42,24 @@ export default function Categorias() {
   const [receitasCategoria, setReceitasCategoria] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // RESETAR CATEGORIA QUANDO A TELA RECEBER FOCO
+  useFocusEffect(
+    React.useCallback(() => {
+      // Sempre volta para a grade de categorias quando a tela é focada
+      setCategoriaSelecionada('');
+
+      return () => {
+        // Cleanup
+      };
+    }, [])
+  );
+
   // Buscar receitas da categoria selecionada
   useEffect(() => {
-    if (!categoriaSelecionada) return;
+    if (!categoriaSelecionada) {
+      setReceitasCategoria([]);
+      return;
+    }
 
     setLoading(true);
     const q = query(
@@ -61,29 +77,31 @@ export default function Categorias() {
       });
       setReceitasCategoria(receitas);
       setLoading(false);
+    }, (error) => {
+      console.error('Erro ao buscar receitas:', error);
+      setLoading(false);
+      Alert.alert('Erro', 'Não foi possível carregar as receitas');
     });
 
     return () => unsubscribe();
   }, [categoriaSelecionada]);
 
   const voltarParaHome = () => {
+    setCategoriaSelecionada(''); // Reseta antes de navegar
     navigation.goBack();
   };
 
-  const voltarParaCategorias = () => {
-    setCategoriaSelecionada('');
-  };
 
   // Tela de grid de categorias
   if (!categoriaSelecionada) {
     return (
       <SafeAreaView style={styles.container}>
         <YStack flex={1} padding="$4">
-          
+
           {/* Barra superior */}
           <XStack alignItems="center" marginBottom="$4" gap="$3">
             <Text fontSize={20} fontWeight="bold" color="black">
-             Categorias
+              Categorias
             </Text>
           </XStack>
 
@@ -112,7 +130,7 @@ export default function Categorias() {
                     justifyContent="flex-end"
                     padding="$3"
                     paddingHorizontal="$2"
-                    >
+                  >
                     <Text
                       color="white"
                       fontSize={16}
@@ -130,16 +148,23 @@ export default function Categorias() {
       </SafeAreaView>
     );
   }
-  
+
 
   // Tela de receitas da categoria selecionada
   return (
     <SafeAreaView style={styles.container}>
       <YStack flex={1} padding="$4">
-        
-        {/* Barra superior */}
+
+        {/* Barra superior btn volta para todas as categorias */}
         <XStack alignItems="center" marginBottom="$4" gap="$3">
-         
+
+          <TouchableOpacity
+            onPress={() => setCategoriaSelecionada('')}
+            style={{ padding: 8 }}
+          >
+            <Ionicons name="arrow-back" size={24} color="black" />
+          </TouchableOpacity>
+
           <YStack>
             <Text fontSize={20} fontWeight="bold" color="black">
               {categoriaSelecionada}
@@ -165,20 +190,21 @@ export default function Categorias() {
             <Button
               backgroundColor="orange"
               color="white"
-              onPress={() => navigation.navigate('Categorias')}>
-            
+              onPress={() => setCategoriaSelecionada('')}
+            >
               Voltar para Categorias
             </Button>
           </YStack>
         ) : (
+
           <FlatList
             data={receitasCategoria}
             keyExtractor={(item) => item.id}
             contentContainerStyle={{ paddingBottom: 20 }}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
-              <ReceitaCard 
-                item={item} 
+              <ReceitaCard
+                item={item}
                 favoritado={favoritos.includes(item.id)}
                 toggleFavorito={toggleFavorito}
               />
@@ -205,11 +231,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    overflow: 'hidden', 
+    overflow: 'hidden',
   },
   cardImage: {
     width: '100%',
     height: '100%',
-    
+
   },
 });

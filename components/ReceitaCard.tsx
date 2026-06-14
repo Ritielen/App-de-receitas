@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { TouchableOpacity, Image, Modal, ScrollView, Dimensions } from 'react-native';
+import {
+  TouchableOpacity, Image, Modal, ScrollView, Dimensions, Share, Alert, Linking, Platform
+} from 'react-native';
 import { YStack, XStack, Text } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -13,10 +15,100 @@ export function ReceitaCard({ item, favoritado, toggleFavorito }: ReceitaCardPro
   const [modalVisivel, setModalVisivel] = useState(false);
   const screenHeight = Dimensions.get('window').height;
 
+  // FUNÇÃO DE COMPARTILHAR RECEITA
+  const compartilharReceita = async (receita) => {
+    try {
+      const dataCriacao = receita.criadoEm?.toDate
+        ? receita.criadoEm.toDate().toLocaleDateString('pt-BR')
+        : receita.criadoEm
+          ? new Date(receita.criadoEm).toLocaleDateString('pt-BR')
+          : 'Data não disponível';
+
+      const mensagem = `🍽️ *Receitas de Família* 🍽️\n\n` +
+        `📋 *${receita.texto?.substring(0, 100) || 'Receita Especial'}${receita.texto?.length > 100 ? '...' : ''}*\n\n` +
+        `👨‍🍳 *Criado por:* ${receita.criadoPor || 'Família'}\n` +
+        `📅 *Data:* ${dataCriacao}\n` +
+        `📂 *Categoria:* ${receita.categoria || 'Geral'}\n\n` +
+        `--------------------------------\n\n` +
+        `📱 *Compartilhado do App Receitas de Família* 🍽️\n\n` +
+        `Baixe o app e descubra mais receitas deliciosas! 🥘👩‍🍳`;
+
+      const result = await Share.share({
+        message: mensagem,
+        title: `Receita de Família - ${receita.criadoPor || 'Família'}`,
+      });
+
+      if (result.action === Share.sharedAction) {
+        Alert.alert('✅ Sucesso!', 'Receita compartilhada com sucesso!');
+      }
+    } catch (error) {
+      Alert.alert('❌ Erro', 'Não foi possível compartilhar a receita');
+      console.error('Erro ao compartilhar:', error);
+    }
+  };
+
+  const compartilharWhatsApp = async (receita) => {
+    try {
+      const dataCriacao = receita.criadoEm?.toDate
+        ? receita.criadoEm.toDate().toLocaleDateString('pt-BR')
+        : receita.criadoEm
+          ? new Date(receita.criadoEm).toLocaleDateString('pt-BR')
+          : 'Data não disponível';
+
+      const mensagem = encodeURIComponent(
+        `🍽️ *Receitas de Família* 🍽️\n\n` +
+        `📋 *${receita.texto?.substring(0, 100) || 'Receita Especial'}${receita.texto?.length > 100 ? '...' : ''}*\n\n` +
+        `👨‍🍳 *Criado por:* ${receita.criadoPor || 'Família'}\n` +
+        `📅 *Data:* ${dataCriacao}\n` +
+        `📂 *Categoria:* ${receita.categoria || 'Geral'}\n\n` +
+        `--------------------------------\n\n` +
+        `📱 *Compartilhado do App Receitas de Família* 🍽️\n\n` +
+        `Baixe o app e descubra mais receitas deliciosas! 🥘👩‍🍳`
+      );
+
+      const url = Platform.select({
+        ios: `whatsapp://send?text=${mensagem}`,
+        android: `whatsapp://send?text=${mensagem}`
+      });
+
+      const canOpen = await Linking.canOpenURL(url);
+
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        await compartilharReceita(receita);
+      }
+    } catch (error) {
+      console.error('Erro WhatsApp:', error);
+      await compartilharReceita(receita);
+    }
+  };
+
+  const compartilharComOpcoes = (receita) => {
+    Alert.alert(
+      '📤 Compartilhar Receita',
+      'Escolha como compartilhar:',
+      [
+        {
+          text: '📱 WhatsApp',
+          onPress: () => compartilharWhatsApp(receita),
+        },
+        {
+          text: '🔄 Outros Apps',
+          onPress: () => compartilharReceita(receita),
+        },
+        {
+          text: '❌ Cancelar',
+          style: 'cancel',
+        },
+      ]
+    );
+  };
+
   return (
     <>
       {/* Card Principal */}
-      <TouchableOpacity 
+      <TouchableOpacity
         onPress={() => setModalVisivel(true)}
         activeOpacity={0.9}
       >
@@ -37,8 +129,8 @@ export function ReceitaCard({ item, favoritado, toggleFavorito }: ReceitaCardPro
               </Text>
             </YStack>
             <Text fontSize={12} color="$gray8">
-              {item.criadoEm?.toDate 
-                ? item.criadoEm.toDate().toLocaleString('pt-BR') 
+              {item.criadoEm?.toDate
+                ? item.criadoEm.toDate().toLocaleString('pt-BR')
                 : item.criadoEm ? new Date(item.criadoEm).toLocaleString('pt-BR') : ''}
             </Text>
           </XStack>
@@ -66,15 +158,15 @@ export function ReceitaCard({ item, favoritado, toggleFavorito }: ReceitaCardPro
           ) : null}
 
           {/* Texto resumido */}
-          <Text 
-            fontSize={14} 
-            color="black" 
+          <Text
+            fontSize={14}
+            color="black"
             numberOfLines={3}
             marginBottom="$1"
           >
             {item.texto}
           </Text>
-          
+
           {item.texto && item.texto.length > 150 && (
             <Text fontSize={12} color="#2196F3" marginBottom="$2" fontWeight="bold">
               Toque para ver mais...
@@ -97,13 +189,14 @@ export function ReceitaCard({ item, favoritado, toggleFavorito }: ReceitaCardPro
                 toggleFavorito(item.id);
               }}
             >
-              <Ionicons 
-                name={favoritado ? "heart" : "heart-outline"} 
-                size={20} 
-                color={favoritado ? "red" : "gray"} 
+              <Ionicons
+                name={favoritado ? "heart" : "heart-outline"}
+                size={20}
+                color={favoritado ? "red" : "gray"}
               />
             </TouchableOpacity>
 
+            {/* Botão de compartilhar  */}
             <TouchableOpacity
               style={{
                 padding: 8,
@@ -111,10 +204,12 @@ export function ReceitaCard({ item, favoritado, toggleFavorito }: ReceitaCardPro
                 backgroundColor: '#f0f0f0',
               }}
               onPress={(e) => {
-                e.stopPropagation();
-                //  lógica para compartilhar
+                e.stopPropagation(); // Impede que o card inteiro seja clicado
+                compartilharComOpcoes(item); // Passa o item completo
               }}
             >
+
+
               <Ionicons name="share-outline" size={20} color="gray" />
             </TouchableOpacity>
           </XStack>
@@ -130,9 +225,9 @@ export function ReceitaCard({ item, favoritado, toggleFavorito }: ReceitaCardPro
       >
         <YStack flex={1} backgroundColor="white">
           {/* Header do Modal */}
-          <XStack 
-            justifyContent="space-between" 
-            alignItems="center" 
+          <XStack
+            justifyContent="space-between"
+            alignItems="center"
             padding="$4"
             borderBottomWidth={1}
             borderBottomColor="$gray5"
@@ -144,22 +239,22 @@ export function ReceitaCard({ item, favoritado, toggleFavorito }: ReceitaCardPro
                 <Text color="#2196F3" fontWeight="bold">Voltar</Text>
               </XStack>
             </TouchableOpacity>
-            
+
             <Text fontSize={16} fontWeight="bold" numberOfLines={1} maxWidth={200}>
               {item.titulo || 'Receita'}
             </Text>
-            
+
             <TouchableOpacity onPress={() => toggleFavorito(item.id)}>
-              <Ionicons 
-                name={favoritado ? "heart" : "heart-outline"} 
-                size={24} 
-                color={favoritado ? "red" : "gray"} 
+              <Ionicons
+                name={favoritado ? "heart" : "heart-outline"}
+                size={24}
+                color={favoritado ? "red" : "gray"}
               />
             </TouchableOpacity>
           </XStack>
 
           {/* Conteúdo do Modal */}
-          <ScrollView 
+          <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ padding: 16 }}
           >
@@ -171,19 +266,19 @@ export function ReceitaCard({ item, favoritado, toggleFavorito }: ReceitaCardPro
                 </Text>
               </YStack>
               <Text fontSize={12} color="$gray8">
-                {item.criadoEm?.toDate 
-                  ? item.criadoEm.toDate().toLocaleString('pt-BR') 
+                {item.criadoEm?.toDate
+                  ? item.criadoEm.toDate().toLocaleString('pt-BR')
                   : item.criadoEm ? new Date(item.criadoEm).toLocaleString('pt-BR') : ''}
               </Text>
             </XStack>
 
             {/* Categoria no modal */}
-            <XStack 
-              backgroundColor="#FFF3E0" 
-              paddingHorizontal="$3" 
-              paddingVertical="$1" 
-              borderRadius={4} 
-              alignSelf="flex-start" 
+            <XStack
+              backgroundColor="#FFF3E0"
+              paddingHorizontal="$3"
+              paddingVertical="$1"
+              borderRadius={4}
+              alignSelf="flex-start"
               marginBottom="$4"
             >
               <Text fontSize={14} color="orange" fontWeight="bold">
@@ -236,6 +331,7 @@ export function ReceitaCard({ item, favoritado, toggleFavorito }: ReceitaCardPro
                 justifyContent: 'center',
                 gap: 8,
               }}
+              onPress={() => compartilharComOpcoes(item)}
             >
               <Ionicons name="share-outline" size={20} color="white" />
               <Text color="white" fontWeight="bold" fontSize={16}>
