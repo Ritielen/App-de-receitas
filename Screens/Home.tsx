@@ -15,7 +15,7 @@ export default function Home() {
   const insets = useSafeAreaInsets();
 
   const {
-    novaReceita, setNovaReceita,receitas,
+    novaReceita, setNovaReceita, receitas,
     categorias, categoriaSelecionada, setCategoriaSelecionada,
     escolherOpcaoImagem, imagemPreview, fazendoUpload,
     postarReceita, favoritos, toggleFavorito,
@@ -89,6 +89,11 @@ export default function Home() {
                 onValueChange={(itemValue) => setCategoriaSelecionada(itemValue)}
                 style={{ backgroundColor: 'white', marginBottom: 12 }}
               >
+                <Picker.Item
+                  label="Selecione uma categoria..."
+                  value=""
+                  color="#999"
+                />
                 {categorias.map((cat, index) => (
                   <Picker.Item key={index} label={cat} value={cat} />
                 ))}

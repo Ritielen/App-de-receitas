@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
@@ -12,15 +12,63 @@ import { useRegisterLogic } from '../hooks/useRegisterLogic';
 import { YStack, Text, Input, Button, Card } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
 
+// Importação do DateTimePicker
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+
 type RegisterScreenProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
 
 export default function Register() {
   const navigation = useNavigation<RegisterScreenProp>();
   
-  const { nome, sobrenome, email, setNome, setSobrenome, setEmail, senha, setSenha, cadastrar, carregando } = useRegisterLogic();
+  const { 
+    nome, 
+    sobrenome, 
+    email, 
+    setNome, 
+    setSobrenome, 
+    setEmail, 
+    senha, 
+    setSenha, 
+    cadastrar, 
+    carregando,
+    dataNascimento,      
+    setDataNascimento    
+  } = useRegisterLogic();
+
+  // Estados para o DatePicker
+  const [date, setDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleRegister = () => {
-    cadastrar(() => navigation.replace('Home'));
+    cadastrar(); 
+  };
+
+  const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    
+    if (selectedDate) {
+      setDate(selectedDate);
+      
+      // Formatação da data para o Firestore
+      const dia = selectedDate.getDate().toString().padStart(2, '0');
+      const mes = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
+      const ano = selectedDate.getFullYear();
+      
+      // Atualizar o estado dataNascimento do hook
+      setDataNascimento(`${dia}/${mes}/${ano}`);
+    }
+  };
+
+  const showDatepicker = () => {
+    setShowDatePicker(true);
+  };
+
+
+  const formatarDataExibicao = () => {
+    if (!dataNascimento) return 'Data de Nascimento';
+    return dataNascimento;
   };
 
   return (
@@ -78,6 +126,32 @@ export default function Register() {
               borderColor="#ccc"
             />
 
+            {/* Campo de Data de Nascimento */}
+            <YStack>
+              <Button
+                backgroundColor="#f9f9f9"
+                borderColor={dataNascimento ? "#007BFF" : "#ccc"}
+                borderWidth={1}
+                color={dataNascimento ? "#333" : "#999"}
+                onPress={showDatepicker}
+                icon={<Ionicons name="calendar" size={18} color="#666" />}
+                justifyContent="flex-start"
+              >
+                {formatarDataExibicao()}
+              </Button>
+              
+              {showDatePicker && (
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onChangeDate}
+                  maximumDate={new Date()} // Não permite datas futuras
+                  minimumDate={new Date(1900, 0, 1)} // Data mínima
+                />
+              )}
+            </YStack>
+
             <Input 
               placeholder="Senha" 
               secureTextEntry 
@@ -90,7 +164,7 @@ export default function Register() {
             />
 
             <Button 
-              backgroundColor="#007BFF" // Azul para diferenciar da tela de login
+              backgroundColor="#007BFF"
               color="#fff" 
               onPress={handleRegister}
               disabled={carregando}

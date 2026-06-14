@@ -10,12 +10,13 @@ export function useRegisterLogic() {
   const [sobrenome, setSobrenome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [dataNascimento, setDataNascimento] = useState<string>('');
   const [carregando, setCarregando] = useState(false);
 
   const navigation = useNavigation();
 
   const cadastrar = async () => {
-    if (!nome || !sobrenome || !email || !senha) {
+    if (!nome || !sobrenome || !email || !senha || !dataNascimento) {
       return Alert.alert("Atenção", "Preencha todos os campos!");
     }
 
@@ -33,6 +34,7 @@ export function useRegisterLogic() {
         sobrenome: sobrenome,
         email: email,
         criadoEm: new Date(),
+        dataNascimento: dataNascimento,
       });
       
       Alert.alert("Sucesso!", "Conta criada com sucesso!");
@@ -55,6 +57,8 @@ export function useRegisterLogic() {
     senha,
     setSenha,
     cadastrar,
-    carregando
+    carregando,
+    dataNascimento,
+    setDataNascimento
   };
 }
