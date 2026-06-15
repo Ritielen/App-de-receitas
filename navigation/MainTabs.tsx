@@ -6,7 +6,7 @@ import Home from '../Screens/Home';
 import Categorias from '../Screens/Categorias';
 import Favoritos from '../Screens/Favoritos';
 // import Publicadas from '../Screens/Publicadas'; 
-// import IA from '../Screens/IA';                 
+import IA from '../Screens/IA';                 
 
 const Tab = createBottomTabNavigator();
 
@@ -48,6 +48,15 @@ export default function MainTabs() {
         options={{
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="heart" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="IA"
+        component={IA}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="message-circle" size={size} color={color} />
           ),
         }}
       />
