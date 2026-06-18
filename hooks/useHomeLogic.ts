@@ -125,6 +125,7 @@ const toggleFavorito = async (receitaId: string) => {
   useEffect(() => {
     const fetchCategorias = async () => {
       const snapshot = await getDocs(collection(db, 'Categorias'));
+      console.log(snapshot.docs.map(doc => doc.data()));
       const lista: string[] = [];
       snapshot.forEach((doc) => {
         Object.keys(doc.data()).forEach((key) => lista.push(key));
