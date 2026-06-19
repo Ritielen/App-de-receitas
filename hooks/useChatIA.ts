@@ -10,7 +10,11 @@ export function useChatIA() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [carregando, setCarregando] = useState(false);
-
+  const [busca, setBusca ] = useState('');
+  
+  const mensagensFiltradas = messages.filter((msg) =>
+    msg.text.toLowerCase().includes(busca.toLowerCase())
+  );
   async function enviarPergunta() {
     if (!input.trim()) return;
 
@@ -48,5 +52,8 @@ export function useChatIA() {
     setInput,
     carregando,
     enviarPergunta,
+    busca,
+    setBusca,
+    mensagensFiltradas
   };
 }

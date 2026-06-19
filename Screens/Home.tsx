@@ -6,7 +6,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useHomeLogic } from '../hooks/useHomeLogic';
-import { YStack, XStack, Text, Button, TextArea } from 'tamagui';
+import { YStack, XStack, Text, Button, TextArea, Input } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { ReceitaCard } from '../components/ReceitaCard';
@@ -18,7 +18,7 @@ export default function Home() {
     novaReceita, setNovaReceita, receitas,
     categorias, categoriaSelecionada, setCategoriaSelecionada,
     escolherOpcaoImagem, imagemPreview, fazendoUpload,
-    postarReceita, favoritos, toggleFavorito,
+    postarReceita, favoritos, toggleFavorito, busca, setBusca, receitasFiltradas
   } = useHomeLogic();
 
   const [showBox, setShowBox] = useState(false);
@@ -129,9 +129,20 @@ export default function Home() {
             </YStack>
           )}
 
+          <Input
+            placeholder="Buscar receita..."
+            value={busca}
+            onChangeText={setBusca}
+            width="100%"
+            backgroundColor="white"
+            borderWidth={1}
+            borderColor="$gray5"
+            marginBottom="$3"
+          />
+
           {/* Lista de receitas */}
           <FlatList
-            data={receitas}
+            data={receitasFiltradas}
             keyExtractor={(item) => item.id}
             contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
             style={{ flex: 1, width: '100%' }}

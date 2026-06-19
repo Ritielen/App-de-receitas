@@ -18,6 +18,7 @@ export function useHomeLogic() {
   const [loading, setLoading] = useState(true); 
   const [nomeUsuario, setNomeUsuario] = useState(''); 
   const [sobrenomeUsuario, setSobrenomeUsuario] = useState(''); 
+  const [busca, setBusca] = useState('');
 
   const usuariosRef = collection(db, "usuarios");
 
@@ -29,6 +30,10 @@ const [loadingFavoritos, setLoadingFavoritos] = useState(true);
 useEffect(() => {
   buscarNomeUsuario();
 }, []);
+
+const receitasFiltradas = receitas.filter((receita) =>
+  receita.texto?.toLowerCase().includes(busca.toLowerCase())
+);
 
 const buscarNomeUsuario = async () => {
   try {
@@ -265,6 +270,9 @@ console.log('Sobrenome:', sobrenomeUsuario);
     favoritos,
   toggleFavorito,
   loadingFavoritos,
+  busca,
+  setBusca,
+  receitasFiltradas
     
   };
 
