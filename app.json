@@ -1,25 +1,21 @@
 {
   "expo": {
-    "name": "app-de-receitas",
+    "name": "Receitas de Família",
     "slug": "app-de-receitas",
     "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "backgroundColor": "#FF6B35",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "image": "./assets/logo.jpeg"
     },
     "ios": {
       "supportsTablet": true
     },
-    "android": {
+      "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/logo.jpeg",
+        "backgroundColor": "#FF6B35"
       },
       "predictiveBackGestureEnabled": false
     },
@@ -32,3 +28,4 @@
     ]
   }
 }
+

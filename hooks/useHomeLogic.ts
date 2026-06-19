@@ -1,7 +1,6 @@
-// @ts-nocheck
 import { useEffect, useState } from 'react';
 import { Alert  } from 'react-native';
-import { addDoc, collection, getDocs, query, orderBy, onSnapshot,  where, deleteDoc } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, orderBy, onSnapshot,  where, deleteDoc, doc, getDoc } from 'firebase/firestore';
 import * as ImagePicker from 'expo-image-picker';
 import { auth, db } from '../firebase';
 import { IMGBB_API_KEY } from '@env';
@@ -19,6 +18,7 @@ export function useHomeLogic() {
   const [nomeUsuario, setNomeUsuario] = useState(''); 
   const [sobrenomeUsuario, setSobrenomeUsuario] = useState(''); 
   const [busca, setBusca] = useState('');
+  const [fotoUsuario, setFotoUsuario] = useState(''); 
 
   const usuariosRef = collection(db, "usuarios");
 
@@ -26,16 +26,16 @@ export function useHomeLogic() {
 const [favoritos, setFavoritos] = useState<string[]>([]);
 const [loadingFavoritos, setLoadingFavoritos] = useState(true);
 
-  // BUSCAR NOME E SOBRENOME DO USUÁRIO LOGADO
+  // BUSCAR NOME, SOBRENOME E FOTO DO USUÁRIO LOGADO
 useEffect(() => {
-  buscarNomeUsuario();
+  buscarDadosUsuario();
 }, []);
 
 const receitasFiltradas = receitas.filter((receita) =>
   receita.texto?.toLowerCase().includes(busca.toLowerCase())
 );
 
-const buscarNomeUsuario = async () => {
+const buscarDadosUsuario = async () => {
   try {
     if (!auth.currentUser) {
       console.log('Usuário não logado');
@@ -55,11 +55,12 @@ const buscarNomeUsuario = async () => {
       console.log('Dados do usuário:', usuario); 
       setNomeUsuario(usuario.nome || '');
       setSobrenomeUsuario(usuario.sobrenome || '');
+      setFotoUsuario(usuario.fotoPerfil || ''); 
     } else {
       console.log('Nenhum usuário encontrado com uid:', auth.currentUser.uid);
     }
   } catch (error) {
-    console.log("Erro ao buscar nome do usuário:", error); 
+    console.log("Erro ao buscar dados do usuário:", error); 
   }
 };
 
@@ -142,27 +143,46 @@ const toggleFavorito = async (receitaId: string) => {
 
 
   // Buscar TODAS as receitas em tempo real 
-  useEffect(() => {
-    const q = query(collection(db, 'receitas'), orderBy('criadoEm', 'desc'));
+useEffect(() => {
+  const q = query(collection(db, 'receitas'), orderBy('criadoEm', 'desc'));
+  
+  const unsubscribe = onSnapshot(q, async (snapshot) => {
+    const listaReceitas: any[] = [];
     
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const listaReceitas: any[] = [];
-      snapshot.forEach((doc) => {
-        listaReceitas.push({
-          id: doc.id,
-          ...doc.data()
-        });
+    for (const docSnapshot of snapshot.docs) {
+      const data = docSnapshot.data();
+      
+      // Se a receita não tem fotoPerfil, busca a foto atual do autor
+      let fotoPerfil = data.fotoPerfil || null;
+      
+      if (data.uid) {
+        try {
+          const userDocRef = doc(db, 'usuarios', data.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            fotoPerfil = userDoc.data().fotoPerfil || null;
+          }
+        } catch (error) {
+          console.error('Erro ao buscar foto do autor:', error);
+        }
+      }
+      
+      listaReceitas.push({
+        id: docSnapshot.id,
+        ...data,
+        fotoPerfil, // Sempre terá a foto mais atualizada
       });
-      setReceitas(listaReceitas);
-      setLoading(false);
-    }, (error) => {
-      console.error('Erro ao buscar receitas:', error);
-      setLoading(false);
-    });
+    }
+    
+    setReceitas(listaReceitas);
+    setLoading(false);
+  }, (error) => {
+    console.error('Erro ao buscar receitas:', error);
+    setLoading(false);
+  });
 
-    //  remove listener quando componente desmontar
-    return () => unsubscribe();
-  }, []);
+  return () => unsubscribe();
+}, []);
 
 
 
@@ -230,12 +250,14 @@ const toggleFavorito = async (receitaId: string) => {
 
   console.log('Nome:', nomeUsuario);
 console.log('Sobrenome:', sobrenomeUsuario);
+console.log('Foto:', fotoUsuario);
 
       await addDoc(collection(db, 'receitas'), {
         texto: novaReceita,           
         categoria: categoriaSelecionada,
         imagem: imagemUrl,
-         criadoPor: nomeUsuario + ' ' + sobrenomeUsuario,          
+        criadoPor: nomeUsuario + ' ' + sobrenomeUsuario,          
+        fotoPerfil: fotoUsuario, 
         autor: auth.currentUser?.email,
         uid: auth.currentUser?.uid,  
         criadoEm: new Date(),
@@ -272,7 +294,9 @@ console.log('Sobrenome:', sobrenomeUsuario);
   loadingFavoritos,
   busca,
   setBusca,
+  fotoUsuario,
   receitasFiltradas
+  
     
   };
 

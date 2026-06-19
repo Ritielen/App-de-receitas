@@ -18,12 +18,12 @@ import { useHomeLogic } from '../hooks/useHomeLogic';
 import { YStack, XStack, Text, Button } from 'tamagui';
 import { Ionicons, } from '@expo/vector-icons';
 import { ReceitaCard } from '../components/ReceitaCard';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, getDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const { width } = Dimensions.get('window');
 const CARD_GAP = 12;
-const CARD_WIDTH = (width - 48 - CARD_GAP) / 2; // 2 colunas com padding
+const CARD_WIDTH = (width - 48 - CARD_GAP) / 2; 
 
 type CategoriasScreenProp = NativeStackNavigationProp<RootStackParamList, 'Categorias'>;
 
@@ -33,11 +33,15 @@ const categoriasData = [
   { id: '2', nome: 'Bolos e tortas', imagem: require('../assets/bolos-tortas.jpg') },
   { id: '3', nome: 'Carnes', imagem: require('../assets/carnes.jpg') },
   { id: '4', nome: 'Massas', imagem: require('../assets/massas.jpg') },
+  { id: '5', nome: 'Peixes e frutos do mar', imagem: require('../assets/frutos do mar.jpg') },
+  { id: '6', nome: 'Acompanhamentos', imagem: require('../assets/acompanhamentos.jpg') },
+  { id: '7', nome: 'Lanches', imagem: require('../assets/lanche.jpg') },
+  { id: '8', nome: 'Alimentação Saudável', imagem: require('../assets/saudavel.jpg') },
 ];
 
 export default function Categorias() {
   const navigation = useNavigation<CategoriasScreenProp>();
-  const { favoritos, toggleFavorito } = useHomeLogic();
+  const { favoritos, toggleFavorito, fotoUsuario } = useHomeLogic();
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
   const [receitasCategoria, setReceitasCategoria] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -67,14 +71,33 @@ export default function Categorias() {
       where('categoria', '==', categoriaSelecionada)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
       const receitas: any[] = [];
-      snapshot.forEach((doc) => {
-        receitas.push({
-          id: doc.id,
-          ...doc.data()
-        });
+
+       for (const docSnapshot of snapshot.docs) {
+      const data = docSnapshot.data();
+      let fotoPerfil = data.fotoPerfil || null;
+
+      if (data.uid) {
+        try {
+          const userDocRef = doc(db, 'usuarios', data.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            fotoPerfil = userDoc.data().fotoPerfil || null;
+          }
+        } catch (error) {
+          console.error('Erro ao buscar foto do autor:', error);
+        }
+      }
+
+      receitas.push({
+        id: docSnapshot.id,
+        ...data,
+        fotoPerfil,
       });
+    }
+
+
       setReceitasCategoria(receitas);
       setLoading(false);
     }, (error) => {
@@ -85,6 +108,8 @@ export default function Categorias() {
 
     return () => unsubscribe();
   }, [categoriaSelecionada]);
+
+  
 
   const voltarParaHome = () => {
     setCategoriaSelecionada(''); // Reseta antes de navegar
@@ -207,6 +232,7 @@ export default function Categorias() {
                 item={item}
                 favoritado={favoritos.includes(item.id)}
                 toggleFavorito={toggleFavorito}
+              fotoUsuarioLogado={fotoUsuario}
               />
             )}
           />

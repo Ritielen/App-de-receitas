@@ -9,6 +9,7 @@ interface ReceitaCardProps {
   item: any;
   favoritado: boolean;
   toggleFavorito: (receitaId: string) => void;
+  fotoUsuarioLogado?: string;
 }
 
 export function ReceitaCard({ item, favoritado, toggleFavorito }: ReceitaCardProps) {
@@ -121,19 +122,39 @@ export function ReceitaCard({ item, favoritado, toggleFavorito }: ReceitaCardPro
           borderColor="$gray5"
           width="100%"
         >
+          
           {/* Cabeçalho */}
           <XStack justifyContent="space-between" alignItems="center" marginBottom="$2">
-            <YStack>
+            <XStack alignItems="center" gap={8}>
+              <YStack
+                width={30} height={30} borderRadius={15}
+                backgroundColor="#f0f0f0"
+                justifyContent="center" alignItems="center"
+                overflow="hidden"
+                borderWidth={2}
+                borderColor={item.fotoPerfil ? '#007BFF' : '#ccc'}
+              >
+                {item.fotoPerfil ? (
+                  <Image
+                    source={{ uri: item.fotoPerfil }}
+                    style={{ width: 30, height: 30, borderRadius: 15 }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Ionicons name="person" size={16} color="#999" />
+                )}
+              </YStack>
               <Text fontSize={14} color="$gray10" fontWeight="bold">
                 {item.criadoPor || 'Usuário Desconhecido'}
               </Text>
-            </YStack>
+            </XStack>
             <Text fontSize={12} color="$gray8">
               {item.criadoEm?.toDate
                 ? item.criadoEm.toDate().toLocaleString('pt-BR')
                 : item.criadoEm ? new Date(item.criadoEm).toLocaleString('pt-BR') : ''}
             </Text>
           </XStack>
+
 
           {/* Categoria */}
           <XStack backgroundColor="#FFF3E0" paddingHorizontal="$2" paddingVertical="$1" borderRadius={4} alignSelf="flex-start" marginBottom="$2">
@@ -260,11 +281,41 @@ export function ReceitaCard({ item, favoritado, toggleFavorito }: ReceitaCardPro
           >
             {/* Informações do autor e data */}
             <XStack justifyContent="space-between" alignItems="center" marginBottom="$4">
-              <YStack>
-                <Text fontSize={14} color="$gray10" fontWeight="bold">
-                  {item.criadoPor || 'Usuário Desconhecido'}
-                </Text>
-              </YStack>
+              <XStack alignItems="center" gap={8}>
+                {/* Avatar da foto */}
+                <YStack
+                  width={30}
+                  height={30}
+                  borderRadius={15}
+                  backgroundColor="#f0f0f0"
+                  justifyContent="center"
+                  alignItems="center"
+                  overflow="hidden"
+                  borderWidth={2}
+                  borderColor={item.fotoPerfil ? '#007BFF' : '#ccc'}
+                >
+                  {item.fotoPerfil ? (
+                    <Image
+                      source={{ uri: item.fotoPerfil }}
+                      style={{
+                        width: 30,
+                        height: 30,
+                        borderRadius: 15,
+                      }}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Ionicons name="person" size={16} color="#999" />
+                  )}
+                </YStack>
+
+                <YStack>
+                  <Text fontSize={14} color="$gray10" fontWeight="bold">
+                    {item.criadoPor || 'Usuário Desconhecido'}
+                  </Text>
+                </YStack>
+              </XStack>
+
               <Text fontSize={12} color="$gray8">
                 {item.criadoEm?.toDate
                   ? item.criadoEm.toDate().toLocaleString('pt-BR')

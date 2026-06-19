@@ -13,19 +13,27 @@ import {
   onSnapshot,
   deleteDoc,
   doc,
+  getDoc
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { ReceitaCard } from '../components/ReceitaCard';
 import { YStack, XStack, Text } from 'tamagui';
 import { useHomeLogic } from '../hooks/useHomeLogic';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../App';
 
 export default function Publicados() {
   const [receitas, setReceitas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const { favoritos, toggleFavorito } = useHomeLogic();
+  const { favoritos, toggleFavorito, fotoUsuario } = useHomeLogic();
 
+
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  //buscar minhas receitas publicadas
   useEffect(() => {
     if (!auth.currentUser) return;
 
@@ -34,15 +42,31 @@ export default function Publicados() {
       where('uid', '==', auth.currentUser.uid)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
       const lista: any[] = [];
 
-      snapshot.forEach((doc) => {
+      for (const docSnapshot of snapshot.docs) {
+        const data = docSnapshot.data();
+        let fotoPerfil = data.fotoPerfil || null;
+
+        if (data.uid) {
+          try {
+            const userDocRef = doc(db, 'usuarios', data.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+              fotoPerfil = userDoc.data().fotoPerfil || null;
+            }
+          } catch (error) {
+            console.error('Erro ao buscar foto do autor:', error);
+          }
+        }
+
         lista.push({
-          id: doc.id,
-          ...doc.data(),
+          id: docSnapshot.id,
+          ...data,
+          fotoPerfil,
         });
-      });
+      }
 
       setReceitas(lista);
       setLoading(false);
@@ -145,6 +169,11 @@ export default function Publicados() {
                   marginBottom="$4"
                   paddingRight="$2"
                 >
+                  {/* Botão editar */}
+                  <TouchableOpacity onPress={() => navigation.navigate('EditarReceita', { item })}>
+                    <Ionicons name="pencil-outline" size={26} color="blue" />
+                  </TouchableOpacity>
+
                   <TouchableOpacity
                     onPress={() =>
                       excluirReceita(item.id)

@@ -12,19 +12,25 @@ import Login from "./Screens/Login";
 import MainTabs from "./navigation/MainTabs";
 import Register from "./Screens/Register";
 import RecuperaSenha from "./Screens/RecuperaSenha";
+import Perfil from "./Screens/Perfil";
+import Splash from './Screens/Splash';
+import EditarReceita from "./Screens/EditarReceita";
 
 export type RootStackParamList = {
   Login: undefined;
   MainTabs: undefined; //substitui home, categorias, favoritos, publicadas e IA
   Register: undefined;
   RecuperaSenha: undefined;
+  Perfil: undefined;
+   Splash: undefined;
+   EditarReceita: { item: any };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   const navigationRef = React.useRef<any>(null);
-
+  
   const deslogar = () => {
     signOut(auth).then(() => {
       navigationRef.current?.reset({
@@ -33,6 +39,20 @@ export default function App() {
       });
     });
   };
+
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+  const timer = setTimeout(() => {
+    setLoading(false);
+  }, 2000);
+
+  return () => clearTimeout(timer);
+}, []);
+
+if (loading) {
+  return <Splash />;
+}
 
   return (
     <TamaguiProvider defaultConfig={tamaguiConfig}>
@@ -87,14 +107,29 @@ export default function App() {
             // Botão da direita - Perfil e Sair
             headerRight: () => (
               <XStack gap={16} alignItems="center">
-                <TouchableOpacity onPress={() => console.log("Perfil")}>
+                {/* Só mostra botão perfil se não estiver no Login/Register/RecuperaSenha */}
+                {!["Login", "Register", "RecuperaSenha"].includes(route.name) && (
+                <TouchableOpacity onPress={() => navigation.navigate('Perfil')}>
                   <Ionicons
                     name="person-circle-outline"
                     size={28}
                     color="#F6B35"
                   />
                 </TouchableOpacity>
+                 )}
 
+                  {!["Login", "Register", "RecuperaSenha"].includes(route.name) && (
+
+                <TouchableOpacity onPress={() => console.log('Configuracoes')}>
+                    <Ionicons
+                      name="settings-outline" 
+                      size={28}
+                      color="#F6B35"
+                    />
+                  </TouchableOpacity>
+                )}
+
+                 
                 {/* Só mostra botão sair se não estiver no Login/Register/RecuperaSenha */}
                 {!["Login", "Register", "RecuperaSenha"].includes(
                   route.name,
@@ -121,6 +156,9 @@ export default function App() {
           <Stack.Screen name="Register" component={Register} />
           <Stack.Screen name="MainTabs" component={MainTabs} />
           <Stack.Screen name="RecuperaSenha" component={RecuperaSenha} />
+          <Stack.Screen name="Perfil" component={Perfil} />
+          <Stack.Screen name="Splash" component={Splash} />
+          <Stack.Screen name="EditarReceita" component={EditarReceita} />
         </Stack.Navigator>
       </NavigationContainer>
     </TamaguiProvider>

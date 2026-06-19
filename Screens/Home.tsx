@@ -18,7 +18,7 @@ export default function Home() {
     novaReceita, setNovaReceita, receitas,
     categorias, categoriaSelecionada, setCategoriaSelecionada,
     escolherOpcaoImagem, imagemPreview, fazendoUpload,
-    postarReceita, favoritos, toggleFavorito, busca, setBusca, receitasFiltradas
+    postarReceita, favoritos, toggleFavorito, fotoUsuario, busca, setBusca, receitasFiltradas
   } = useHomeLogic();
 
   const [showBox, setShowBox] = useState(false);
@@ -152,6 +152,7 @@ export default function Home() {
                 item={item}
                 favoritado={favoritos.includes(item.id)}
                 toggleFavorito={toggleFavorito}
+                fotoUsuarioLogado={fotoUsuario}
               />
             )}
           />

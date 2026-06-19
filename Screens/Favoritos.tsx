@@ -14,7 +14,7 @@ import { useHomeLogic } from '../hooks/useHomeLogic';
 import { YStack, XStack, Text, Button } from 'tamagui';
 import { Ionicons, FontAwesome5, Feather } from '@expo/vector-icons';
 import { ReceitaCard } from '../components/ReceitaCard';
-import { collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { TouchableOpacity } from 'react-native';
 
@@ -22,44 +22,62 @@ type FavoritosScreenProp = NativeStackNavigationProp<RootStackParamList, 'Favori
 
 export default function Favoritos() {
   const navigation = useNavigation<FavoritosScreenProp>();
-  const { favoritos, toggleFavorito } = useHomeLogic();
+  const { favoritos, toggleFavorito, fotoUsuario } = useHomeLogic();
   const [receitasFavoritas, setReceitasFavoritas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Favoritos');
 
-  // Buscar receitas favoritadas
+ // Buscar receitas favoritadas
   useEffect(() => {
-    if (!auth.currentUser || favoritos.length === 0) {
-      setReceitasFavoritas([]);
-      setLoading(false);
-      return;
+  if (!auth.currentUser || favoritos.length === 0) {
+    setReceitasFavoritas([]);
+    setLoading(false);
+    return;
+  }
+
+  const receitasRef = collection(db, 'receitas');
+  const q = query(receitasRef, where('__name__', 'in', favoritos));
+
+  const unsubscribe = onSnapshot(q, async (snapshot) => {
+    const receitas: any[] = [];
+
+    for (const docSnapshot of snapshot.docs) {
+      const data = docSnapshot.data();
+      let fotoPerfil = data.fotoPerfil || null;
+
+      if (data.uid) {
+        try {
+          const userDocRef = doc(db, 'usuarios', data.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            fotoPerfil = userDoc.data().fotoPerfil || null;
+          }
+        } catch (error) {
+          console.error('Erro ao buscar foto do autor:', error);
+        }
+      }
+
+      receitas.push({
+        id: docSnapshot.id,
+        ...data,
+        fotoPerfil,
+      });
     }
 
-    const receitasRef = collection(db, 'receitas');
-    const q = query(receitasRef, where('__name__', 'in', favoritos));
+    setReceitasFavoritas(receitas);
+    setLoading(false);
+  }, (error) => {
+    console.error('Erro ao buscar favoritos:', error);
+    setLoading(false);
+  });
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const receitas: any[] = [];
-      snapshot.forEach((doc) => {
-        receitas.push({
-          id: doc.id,
-          ...doc.data()
-        });
-      });
-      setReceitasFavoritas(receitas);
-      setLoading(false);
-    }, (error) => {
-      console.error('Erro ao buscar favoritos:', error);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [favoritos]);
+  return () => unsubscribe(); 
+}, [favoritos]);
 
    const voltarParaHome = () => {
     navigation.navigate('Inicio');
   };
-
+  
   return (
     <SafeAreaView style={styles.container}>
       <YStack flex={1} padding="$4">
