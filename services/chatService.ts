@@ -15,7 +15,6 @@ export async function salvarPerguntaResposta(
       pergunta,
       resposta,
       criadoEm: serverTimestamp(),
-      tipo: "receita_bolo",
     });
 
     console.log("Pergunta e resposta salvas com sucesso");
