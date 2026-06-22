@@ -8,7 +8,7 @@ const ai = new GoogleGenAI({
 export async function perguntarIA(pergunta: string) {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash", // rápido e barato
+      model: "gemini-2.5-flash", //modelo do gemini
       contents: [
         {
           role: "user",
